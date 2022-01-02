@@ -1,0 +1,30 @@
+{
+    "name": "@binyamin/eleventy-plugin-sass",
+    "description": "",
+    "version": "0.1.0",
+    "main": ".eleventy.js",
+    "author": "Binyamin Aron Green (https://binyam.in)",
+    "keywords": [
+        "eleventy",
+        "eleventy-plugin",
+        "sass",
+        "dart-sass"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "clean-css": "^5.2.2",
+        "deepmerge": "^4.2.2",
+        "sass": "^1.45.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/binyamin/eleventy-plugin-sass.git"
+    },
+    "bugs": {
+        "url": "https://github.com/binyamin/eleventy-plugin-sass/issues"
+    },
+    "homepage": "https://github.com/binyamin/eleventy-plugin-sass#readme"
+}
