@@ -45,10 +45,10 @@ function SassPlugin(eleventyConfig, options) {
         let css = options.minify ? minify(result.css) : result.css;
 
         try {
-            fs.accessSync("_site/css")
+            fs.accessSync(options.outDir)
         } catch(error) {
             if(error.code === "ENOENT") {
-                fs.mkdirSync("_site/css", { recursive: true })
+                fs.mkdirSync(options.outDir, { recursive: true })
             } else {
                 throw error;
             }
