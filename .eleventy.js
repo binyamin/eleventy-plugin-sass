@@ -5,13 +5,22 @@ const deepmerge = require("deepmerge");
 const sass = require("sass");
 const cleanCss = require("clean-css");
 
-function minify(css) {
-    const cleaner = new cleanCss();
+/**
+ * 
+ * @param {string} css un-minified css
+ * @param {{level: MinifyLevel}} [opts={level: 1}]
+ * @returns {string} minified css
+ */
+function minify(css, opts={ level: 1 }) {
+    const cleaner = new cleanCss({
+        level: opts.level
+    });
     const minified = cleaner.minify(css);
     
     if(!minified.styles) {
         throw minified.errors;
     }
+    
     if(minified.errors || minified.warnings) {
         console.error({
             errors: minified.errors,
@@ -24,6 +33,8 @@ function minify(css) {
 
 /**
  * 
+ * @typedef {0|1|2} MinifyLevel See <https://github.com/clean-css/clean-css#optimization-levels>
+ * 
  * @todo inline sourcemaps
  * @todo combine dir & file, outDir & outFile
  * 
@@ -34,7 +45,7 @@ function minify(css) {
  * @param {string} options.outDir output dir, absolute path
  * @param {string} options.outFile output file (css)
  * @param {boolean} [options.sourceMap=true] Generate sourceMaps? `true` means "external", `false` means none
- * @param {boolean} [options.minify=true] Run through CleanCSS. You may want to only minify in production
+ * @param {boolean|MinifyLevel} [options.minify=true] Run through CleanCSS. You may want to only minify in production
  */
 function SassPlugin(eleventyConfig, options) {
     /**
@@ -46,6 +57,7 @@ function SassPlugin(eleventyConfig, options) {
     }
 
     options = deepmerge(defaultOptions, options);
+    if(options.minify === true) options.minify = 1;
 
     eleventyConfig.addWatchTarget(options.dir)
     
@@ -56,7 +68,7 @@ function SassPlugin(eleventyConfig, options) {
             style: "expanded"
         });
 
-        let css = options.minify ? minify(result.css) : result.css;
+        let css = options.minify !== false ? minify(result.css, { level: options.minify }) : result.css;
 
         try {
             fs.accessSync(options.outDir)
