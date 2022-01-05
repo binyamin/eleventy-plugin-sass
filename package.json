@@ -27,5 +27,8 @@
     "bugs": {
         "url": "https://github.com/binyamin/eleventy-plugin-sass/issues"
     },
-    "homepage": "https://github.com/binyamin/eleventy-plugin-sass#readme"
+    "homepage": "https://github.com/binyamin/eleventy-plugin-sass#readme",
+    "peerDependencies": {
+        "@11ty/eleventy": ">=0.11.1"
+    }
 }
