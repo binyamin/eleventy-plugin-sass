@@ -1,6 +1,7 @@
 {
     "name": "@binyamin/eleventy-plugin-sass",
-    "description": "",
+    "description": "My own eleventy plugin for compiling dart-sass",
+    "private": true,
     "version": "0.1.0",
     "main": ".eleventy.js",
     "author": "Binyamin Aron Green (https://binyam.in)",
