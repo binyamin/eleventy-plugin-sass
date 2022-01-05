@@ -8,13 +8,24 @@ const cleanCss = require("clean-css");
 function minify(css) {
     const cleaner = new cleanCss();
     const minified = cleaner.minify(css);
-    if(!minified.styles) throw minified.errors;
-    else return minified.styles;
+    
+    if(!minified.styles) {
+        throw minified.errors;
+    }
+    if(minified.errors || minified.warnings) {
+        console.error({
+            errors: minified.errors,
+            warnings: minified.warnings
+        });
+    }
+    
+    return minified.styles;
 }
 
 /**
  * 
  * @todo inline sourcemaps
+ * @todo combine dir & file, outDir & outFile
  * 
  * @param {import("@11ty/eleventy/src/UserConfig")} eleventyConfig
  * @param {object} options
@@ -26,6 +37,9 @@ function minify(css) {
  * @param {boolean} [options.minify=true] Run through CleanCSS. You may want to only minify in production
  */
 function SassPlugin(eleventyConfig, options) {
+    /**
+     * @type {Partial<options>}
+     */
     const defaultOptions = {
         sourceMap: true,
         minify: true
