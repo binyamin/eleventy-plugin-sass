@@ -6,29 +6,96 @@ const sass = require("sass");
 const cleanCss = require("clean-css");
 
 /**
+ * Write CSS to file-system, and sourceMap if passed
  * 
- * @param {string} css un-minified css
- * @param {{level: MinifyLevel}} [opts={level: 1}]
- * @returns {string} minified css
+ * @param {object} opts
+ * @param {string} opts.dir
+ * @param {string} opts.file
+ * @param {string} opts.css
+ * @param {string} [opts.sourceMap]
  */
-function minify(css, opts={ level: 1 }) {
+function write(opts) {
+    try {
+        fs.accessSync(opts.dir)
+    } catch(error) {
+        if(error.code === "ENOENT") {
+            fs.mkdirSync(opts.dir, { recursive: true })
+        } else {
+            throw error;
+        }
+    }
+
+    if(opts.sourceMap) {
+        fs.writeFileSync(path.join(opts.dir, opts.file + ".map"), opts.sourceMap, 'utf-8');
+        opts.css += `\n/*# sourceMappingURL=${opts.file}.map */`;
+    }
+
+    fs.writeFileSync(path.join(opts.dir, opts.file), opts.css, 'utf-8');
+}
+
+/**
+ * Minify CSS
+ * 
+ * @param {string} css - CSS to minify
+ * @param {object} opts
+ * @param {MinifyLevel} opts.level
+ * @param {string} [opts.sourceMap]
+ * @param {string} [opts.sourceMapDir] - required if `opts.sourceMap` is passed
+ */
+function minify(css, opts){
+    // [1] Initialize Clean-CSS
     const cleaner = new cleanCss({
-        level: opts.level
+        level: opts.minify,
+        ...(opts.sourceMap ? {
+            sourceMap: true,
+            rebaseTo: opts.sourceMapDir
+        } : {})
     });
-    const minified = cleaner.minify(css);
     
+    // [2] Minify CSS
+    const minified = opts.sourceMap ? cleaner.minify(css, opts.sourceMap) : cleaner.minify(css);
+
+    // [3] Error Handling
     if(!minified.styles) {
         throw minified.errors;
     }
     
-    if(minified.errors || minified.warnings) {
+    if(minified.errors.length > 0 || minified.warnings.length > 0) {
         console.error({
             errors: minified.errors,
             warnings: minified.warnings
         });
     }
-    
-    return minified.styles;
+
+    return {
+        styles: minified.styles,
+        sourceMap: minified.sourceMap?.toString()
+    }
+}
+
+/**
+ * Compile sass/scss
+ * 
+ * @param {string} filePath
+ * @param {{emitSourceMap: boolean}} [opts={emitSourceMap: false}] 
+ * @returns {css: string, sourceMap ?: string}
+ */
+function compile(filePath, opts) {
+    const result = sass.compile(filePath, {
+        loadPaths: [ "node_modules" ],
+        style: "expanded",
+        ...(opts.emitSourceMap ? {
+            sourceMap: true,
+        }: {})
+    });
+
+    return {
+        css: result.css,
+        sourceMap: opts.emitSourceMap ? JSON.stringify({
+            ...result.sourceMap,
+            file: path.basename(filePath)
+        }) : ""
+    };
 }
 
 /**
@@ -62,32 +129,30 @@ function SassPlugin(eleventyConfig, options) {
     eleventyConfig.addWatchTarget(options.dir)
     
     eleventyConfig.on("beforeBuild", function() {
-        const result = sass.compile(path.join(options.dir, options.file), {
-            loadPaths: [ "node_modules" ],
-            sourceMap: !!options.sourceMap,
-            style: "expanded"
+        let {css, sourceMap} = compile(path.join(options.dir, options.file), {
+            emitSourceMap: options.sourceMap
         });
 
-        let css = options.minify !== false ? minify(result.css, { level: options.minify }) : result.css;
+        // NOTE: options.minify could be `0`, and still be valid
+        if(options.minify !== false) {
+            const res = minify(css, {
+                level: options.minify,
+                ...(options.sourceMap ? {
+                    sourceMap: sourceMap,
+                    sourceMapDir: options.outDir
+                }: {})
+            });
+            
+            css = res.styles;
+            sourceMap = res.sourceMap;
+        }
 
-        try {
-            fs.accessSync(options.outDir)
-        } catch(error) {
-            if(error.code === "ENOENT") {
-                fs.mkdirSync(options.outDir, { recursive: true })
-            } else {
-                throw error;
-            }
-        }
-        if(result.sourceMap && options.sourceMap) {
-            css += `\n/*# sourceMappingURL=${options.outFile}.map */`
-            fs.writeFileSync(
-                path.join(options.outDir, options.outFile + ".map"),
-                JSON.stringify({...result.sourceMap, file: options.outFile}),
-                'utf-8'
-            );
-        }
-        fs.writeFileSync(path.join(options.outDir, options.outFile), css, 'utf-8')
+        write({
+            dir: options.outDir,
+            file: options.outFile,
+            css,
+            ...(options.sourceMap ? { sourceMap }: {})
+        });
     })
 
 }
