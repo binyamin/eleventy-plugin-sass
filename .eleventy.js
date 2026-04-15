@@ -1,9 +1,9 @@
-const path = require("path");
-const fs = require("fs");
+import path from "node:path";
+import fs from "node:fs";
 
-const deepmerge = require("deepmerge");
-const sass = require("sass");
-const cleanCss = require("clean-css");
+import deepmerge from "deepmerge";
+import * as sass from "sass";
+import cleanCss from "clean-css";
 
 /**
  * Write CSS to file-system, and sourceMap if passed
@@ -157,4 +157,4 @@ function SassPlugin(eleventyConfig, options) {
 
 }
 
-module.exports = SassPlugin;
+export default SassPlugin;

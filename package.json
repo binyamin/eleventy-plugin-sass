@@ -2,7 +2,8 @@
     "name": "@binyamin/eleventy-plugin-sass",
     "description": "My own eleventy plugin for compiling dart-sass",
     "private": true,
-    "version": "0.1.0",
+    "type": "module",
+    "version": "1.0.0",
     "main": ".eleventy.js",
     "author": "Binyamin Aron Green (https://binyam.in)",
     "keywords": [
@@ -16,9 +17,9 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "clean-css": "^5.2.2",
-        "deepmerge": "^4.2.2",
-        "sass": "^1.48.0"
+        "clean-css": "^5.3.3",
+        "deepmerge": "^4.3.1",
+        "sass": "^1.99.0"
     },
     "repository": {
         "type": "git",
@@ -29,6 +30,6 @@
     },
     "homepage": "https://github.com/binyamin/eleventy-plugin-sass#readme",
     "peerDependencies": {
-        "@11ty/eleventy": ">=0.11.1"
+        "@11ty/eleventy": ">=3.x"
     }
 }
